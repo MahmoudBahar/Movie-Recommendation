@@ -3,7 +3,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 import seaborn as sns
-import plotly.express as px
 import io, requests
 
 # Load data (example paths, update as necessary)

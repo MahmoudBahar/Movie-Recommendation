@@ -1,0 +1,9 @@
+wordcloud
+surprise
+scikit-learn
+pandas
+numpy
+matplotlib
+seaborn
+imblearn
+scikit-learn-intelex

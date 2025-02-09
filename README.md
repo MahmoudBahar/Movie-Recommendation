@@ -69,11 +69,6 @@ This demo video showcases the functionality of the Streamlit-based movie recomme
 
 [Watch the video demo here](https://github.com/user-attachments/assets/0ac760ef-8d1e-4994-b999-e72f9200aa95)
 
-## Future Improvements
-- **High Priority:** Implementing **Hybrid Filtering** by combining collaborative and content-based methods to improve recommendation accuracy.
-- **Medium Priority:** Adding **user authentication** to enable personalized recommendations based on individual user profiles.
-- **Low Priority:** Enhancing UI/UX with advanced visualizations, such as interactive graphs and movie similarity maps, to provide a more engaging user experience.
-
 ## License
 This project is licensed under the MIT License.
 

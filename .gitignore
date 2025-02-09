@@ -12,3 +12,7 @@ Streamlit-offline/Models/SVD.joblib
 *.pkl
 
 *.pptx
+
+*.7z
+
+anaconda_projects/db/

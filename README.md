@@ -1,5 +1,7 @@
 # Movie Recommendation System
 
+[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FMahmoudBahar%2FMovie-Recommendation&count_bg=%2379C83D&title_bg=%23555555&icon=themoviedatabase.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
+
 ## Overview
 
 This **Movie Recommendation System** employs two key techniques: **Collaborative Filtering** using **Singular Value Decomposition (SVD)** to analyze user preferences, and **Content-Based Filtering** using **K-Nearest Neighbors (KNN)** to identify similar movies based on metadata. The system is deployed via **Streamlit**, offering an intuitive and interactive web interface for users to search, explore, and receive recommendations.

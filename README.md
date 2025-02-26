@@ -28,7 +28,7 @@ This project integrates **Time Decay Ratings** into user-based recommendations, 
 - **Analysis Page**: Provides insights into the recommendation system and its underlying data.
 - **Interactive UI**: Built with **Streamlit** for easy navigation and visualization.
 
-## How It Works
+## How It Works 🛠️
 1. **Collaborative Filtering (SVD)**
    - Based on user ratings and interactions.
    - Finds latent factors to predict user preferences.
@@ -76,10 +76,10 @@ This demo video showcases the functionality of the Streamlit-based movie recomme
 
 [Watch the video demo here](https://github.com/user-attachments/assets/0ac760ef-8d1e-4994-b999-e72f9200aa95)
 
-## License
+## License 📜
 This project is licensed under the MIT License.
 
-## Contact
+## Contact 📩
 For any queries or suggestions, feel free to reach out:
 - **Email**: mahmoudbahar585@outlook.com
 - **GitHub**: [MahmoudBahar](https://github.com/MahmoudBahar)

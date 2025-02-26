@@ -1,4 +1,4 @@
-# Movie Recommendation System
+# Movie Recommendation System 🎬
 
 <div align="center">
   <a href="https://hits.seeyoufarm.com">

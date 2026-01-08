@@ -98,22 +98,37 @@ def load_content_bundle() -> Tuple[pd.DataFrame, pd.DataFrame, object, object, o
 
 
 @st.cache_data(show_spinner=False)
-def load_ratings() -> pd.DataFrame:
-    ratings = pd.read_pickle(_download_bytes(RATINGS_URL))
-    dtype_map = {"userId": "int32", "movieId": "int32", "rating": "float32"}
-    for col, dtype in dtype_map.items():
-        if col in ratings:
-            ratings[col] = pd.to_numeric(ratings[col], errors="coerce").astype(dtype)
-    if "timestamp" in ratings:
-        ratings["timestamp"] = pd.to_numeric(ratings["timestamp"], errors="coerce").astype(
-            "int32"
+def load_ratings() -> Optional[pd.DataFrame]:
+    try:
+        ratings = pd.read_pickle(_download_bytes(RATINGS_URL))
+        dtype_map = {"userId": "int32", "movieId": "int32", "rating": "float32"}
+        for col, dtype in dtype_map.items():
+            if col in ratings:
+                ratings[col] = pd.to_numeric(ratings[col], errors="coerce").astype(dtype)
+        if "timestamp" in ratings:
+            ratings["timestamp"] = pd.to_numeric(ratings["timestamp"], errors="coerce").astype(
+                "int32"
+            )
+        return ratings
+    except MemoryError:
+        st.error(
+            "Not enough memory to load ratings. Staying in light mode—try running locally with more RAM."
         )
-    return ratings
+        return None
 
 
 @st.cache_resource(show_spinner=False)
-def load_cf_bundle() -> Tuple[pd.DataFrame, object, object]:
-    ratings = load_ratings()
-    algo = joblib.load(_download_bytes(SVD_URL))
-    weighted_algo = joblib.load(_download_bytes(WEIGHTED_SVD_URL))
-    return ratings, algo, weighted_algo
+def load_cf_bundle() -> Optional[Tuple[pd.DataFrame, object, object]]:
+    try:
+        ratings = load_ratings()
+        if ratings is None:
+            return None
+        algo = joblib.load(_download_bytes(SVD_URL))
+        weighted_algo = joblib.load(_download_bytes(WEIGHTED_SVD_URL))
+        return ratings, algo, weighted_algo
+    except MemoryError:
+        st.error(
+            "Not enough memory to load collaborative filtering models. "
+            "Staying in light mode—try running locally with more RAM."
+        )
+        return None

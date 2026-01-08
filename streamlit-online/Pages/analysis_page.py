@@ -10,7 +10,13 @@ from mode_toggle import resolve_light_mode
 light_mode = resolve_light_mode(key_prefix="analysis_")
 
 movies = load_movies()
-ratings = None if light_mode else load_ratings()
+ratings = None
+if not light_mode:
+    ratings = load_ratings()
+    if ratings is None:
+        # Loading ratings failed (likely memory). Force light mode for this session.
+        st.session_state["analysis_heavy_mode_unlocked"] = False
+        st.session_state["analysis_light_mode_override"] = True
 
 # Page Title
 st.title("📊 Analysis of Movies and Ratings")
@@ -40,8 +46,8 @@ st.pyplot(fig)
 if ratings is None:
     st.markdown("---")
     st.info(
-        "Ratings-heavy analytics are locked while light mode is on. "
-        "Switch off the toggle above and enter the heavy-mode password (if set) to load ratings and full analysis."
+        "Ratings-heavy analytics are unavailable (light mode or not enough memory). "
+        "Switch off the toggle above and enter the heavy-mode password (if set), or run locally with more RAM."
     )
 else:
     # Section 3: Ratings Distribution

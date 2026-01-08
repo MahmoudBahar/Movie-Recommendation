@@ -73,7 +73,7 @@ pip install streamlit pandas numpy scikit-learn scikit-surprise
   streamlit run stream_router.py
   ```
 - **Light mode (default):** to stay under Streamlit Community Cloud RAM limits, heavy assets (user-based SVD recommender + ratings analytics) stay off by default. Content-based recommendations and the overview still work.
-- **Enable full mode:** set `MOVIE_APP_LIGHT_MODE=0` or add `light_mode = false` in `.streamlit/secrets.toml` when you have more memory. Full mode loads the ratings table and SVD models.
+- **Enable full mode:** toggle the “Light mode (RAM saver)” switch inside the app, or set `MOVIE_APP_LIGHT_MODE=0` / `light_mode = false` in `.streamlit/secrets.toml` when you have more memory. Full mode loads the ratings table and SVD models.
 
 ## Usage
 1. Open the **Overview Page** to search for a movie.

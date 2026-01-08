@@ -8,11 +8,21 @@ from data_loader import load_cf_bundle, load_content_bundle, light_mode_enabled
 st.title("🎥 Cool Movie Recommendation Page")
 st.write("Choose a recommendation method below:")
 
+light_mode_default = light_mode_enabled()
+if "light_mode_override" not in st.session_state:
+    st.session_state["light_mode_override"] = light_mode_default
+light_mode = st.toggle(
+    "Light mode (RAM saver)",
+    value=st.session_state["light_mode_override"],
+    help="Disable to load collaborative filtering models and ratings.",
+    key="light_mode_toggle",
+)
+st.session_state["light_mode_override"] = light_mode
+
 # Tabs for different recommendation methods
 tab1, tab2, tab3 = st.tabs(["👤 User-Based", "✨ Custom Preferences", "🎬 Movie Similarity"])
 
 movies, features, knn_pl, title_to_idx, idx_to_title = load_content_bundle()
-light_mode = light_mode_enabled()
 
 
 def scrollableElement(output, header):

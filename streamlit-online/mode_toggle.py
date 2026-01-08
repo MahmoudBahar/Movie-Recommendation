@@ -27,7 +27,7 @@ def resolve_light_mode(key_prefix: str = "") -> bool:
     if unlocked_key not in st.session_state:
         st.session_state[unlocked_key] = False
 
-    light_mode = st.toggle(
+    desired_light_mode = st.toggle(
         "Light mode (RAM saver)",
         value=st.session_state[override_key],
         help="Disable to load collaborative filtering models and ratings.",
@@ -35,32 +35,36 @@ def resolve_light_mode(key_prefix: str = "") -> bool:
     )
 
     password_secret = _get_password_secret()
+    light_mode = desired_light_mode
 
-    if not light_mode:
-        if password_secret:
-            if st.session_state[unlocked_key]:
-                light_mode = False
+    if password_secret:
+        unlocked = st.session_state[unlocked_key]
+        if not unlocked and not desired_light_mode:
+            st.info(
+                "Heavy mode is restricted here. If you need full mode without the password, "
+                "clone the GitHub repo and run the app locally to disable light mode safely."
+            )
+            pwd = st.text_input(
+                "Heavy mode password",
+                type="password",
+                key=pwd_input_key,
+                help="Provided by the deployment secrets",
+            )
+            if st.button("Unlock heavy mode", key=btn_key):
+                if pwd == password_secret:
+                    st.session_state[unlocked_key] = True
+                    light_mode = False
+                    st.success("Heavy mode unlocked for this session.")
+                else:
+                    st.warning("Incorrect password. Staying in light mode.")
+                    light_mode = True
             else:
-                st.info(
-                    "Heavy mode is restricted here. If you need full mode without the password, "
-                    "clone the GitHub repo and run the app locally to disable light mode safely."
-                )
-                pwd = st.text_input(
-                    "Heavy mode password",
-                    type="password",
-                    key=pwd_input_key,
-                    help="Provided by the deployment secrets",
-                )
-                if st.button("Unlock heavy mode", key=btn_key):
-                    if pwd == password_secret:
-                        st.session_state[unlocked_key] = True
-                        light_mode = False
-                        st.success("Heavy mode unlocked for this session.")
-                    else:
-                        st.warning("Incorrect password. Staying in light mode.")
-                        light_mode = True
-        else:
-            light_mode = False
+                # Wait for user to press unlock; stay in light mode meanwhile.
+                light_mode = True
+        elif unlocked:
+            light_mode = desired_light_mode
+    else:
+        light_mode = desired_light_mode
 
     st.session_state[override_key] = light_mode
     return light_mode

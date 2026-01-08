@@ -7,8 +7,8 @@ joblib
 pillow
 scikit-learn
 pandas
-numpy==1.26.4
+numpy
 matplotlib
-seaborn
+seaborn==0.13.2
 imblearn
 scikit-learn-intelex

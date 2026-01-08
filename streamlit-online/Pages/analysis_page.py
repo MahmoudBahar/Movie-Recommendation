@@ -43,7 +43,7 @@ all_genres = movies["genres"].str.split("|").explode()
 wordcloud = WordCloud(width=800, height=400, background_color="white").generate(" ".join(all_genres.dropna()))
 
 fig, ax = plt.subplots(figsize=(10, 6))
-ax.imshow(wordcloud, interpolation="bilinear")
+ax.imshow(wordcloud.to_image(), interpolation="bilinear")
 ax.axis("off")
 st.pyplot(fig)
 

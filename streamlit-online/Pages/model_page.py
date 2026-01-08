@@ -2,22 +2,14 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-from data_loader import load_cf_bundle, load_content_bundle, light_mode_enabled
+from data_loader import load_cf_bundle, load_content_bundle
+from mode_toggle import resolve_light_mode
 
 # Streamlit app
 st.title("🎥 Cool Movie Recommendation Page")
 st.write("Choose a recommendation method below:")
 
-light_mode_default = light_mode_enabled()
-if "light_mode_override" not in st.session_state:
-    st.session_state["light_mode_override"] = light_mode_default
-light_mode = st.toggle(
-    "Light mode (RAM saver)",
-    value=st.session_state["light_mode_override"],
-    help="Disable to load collaborative filtering models and ratings.",
-    key="light_mode_toggle",
-)
-st.session_state["light_mode_override"] = light_mode
+light_mode = resolve_light_mode(key_prefix="model_")
 
 # Tabs for different recommendation methods
 tab1, tab2, tab3 = st.tabs(["👤 User-Based", "✨ Custom Preferences", "🎬 Movie Similarity"])

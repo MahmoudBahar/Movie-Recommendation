@@ -4,18 +4,10 @@ import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 import seaborn as sns
 
-from data_loader import load_movies, load_ratings, light_mode_enabled
+from data_loader import load_movies, load_ratings
+from mode_toggle import resolve_light_mode
 
-light_mode_default = light_mode_enabled()
-if "light_mode_override" not in st.session_state:
-    st.session_state["light_mode_override"] = light_mode_default
-light_mode = st.toggle(
-    "Light mode (RAM saver)",
-    value=st.session_state["light_mode_override"],
-    help="Disable to load ratings and full analytics.",
-    key="light_mode_toggle",
-)
-st.session_state["light_mode_override"] = light_mode
+light_mode = resolve_light_mode(key_prefix="analysis_")
 
 movies = load_movies()
 ratings = None if light_mode else load_ratings()

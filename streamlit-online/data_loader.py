@@ -1,5 +1,6 @@
 import io
 import os
+import os.path
 from typing import Optional, Tuple
 
 import joblib
@@ -14,6 +15,16 @@ WEIGHTED_SVD_URL = "https://drive.usercontent.google.com/download?id=1-9F142ZpJT
 KNN_URL = "https://drive.usercontent.google.com/u/0/uc?id=1-2j6yK1ajE37xifio-Eo1YLpbHsjLyLr&export=download"
 TITLE_TO_IDX_URL = "https://drive.usercontent.google.com/u/0/uc?id=1-AoCFwt2MZ2ExVR1wt-LiT8IDehnvjUP&export=download"
 IDX_TO_TITLE_URL = "https://drive.usercontent.google.com/u/0/uc?id=1-5kmSUkujuIKGAGHI76mRMZme6miXDCp&export=download"
+LOCAL_DATA_DIR_ENV = "MOVIE_APP_LOCAL_DATA_DIR"
+LOCAL_DATA_DIR_SECRET = "local_data_dir"
+
+MOVIES_FILE = "movies.pkl"
+RATINGS_FILE = "ratings.pkl"
+SVD_FILE = "svd.joblib"
+WEIGHTED_SVD_FILE = "weighted_svd.joblib"
+KNN_FILE = "knn.joblib"
+TITLE_TO_IDX_FILE = "title_to_idx.pkl"
+IDX_TO_TITLE_FILE = "idx_to_title.pkl"
 
 TRUE_VALUES = {"1", "true", "yes", "on"}
 FALSE_VALUES = {"0", "false", "no", "off"}
@@ -54,53 +65,95 @@ def _download_bytes(url: str) -> io.BytesIO:
     return io.BytesIO(response.content)
 
 
+def _local_dir() -> Optional[str]:
+    secret_value = None
+    try:
+        secret_value = st.secrets.get(LOCAL_DATA_DIR_SECRET, None)
+    except Exception:
+        secret_value = None
+    env_value = os.getenv(LOCAL_DATA_DIR_ENV)
+    return secret_value or env_value
+
+
+def _maybe_local_bytes(filename: str) -> Optional[io.BytesIO]:
+    base = _local_dir()
+    if not base:
+        return None
+    candidate = os.path.join(base, filename)
+    if os.path.exists(candidate):
+        with open(candidate, "rb") as f:
+            return io.BytesIO(f.read())
+    return None
+
+
+def _open_bytes(filename: str, url: str) -> io.BytesIO:
+    local = _maybe_local_bytes(filename)
+    if local is not None:
+        return local
+    return _download_bytes(url)
+
+
 @st.cache_data(show_spinner=False)
-def load_movies() -> pd.DataFrame:
-    movies = pd.read_pickle(_download_bytes(MOVIES_URL))
-    dtype_map = {
-        "movieId": "int32",
-        "popularity": "float32",
-        "runtime": "float32",
-        "weightedVoteAverage": "float32",
-    }
-    for col, dtype in dtype_map.items():
-        if col in movies:
-            movies[col] = pd.to_numeric(movies[col], errors="coerce").astype(dtype)
-    if "release_date" in movies:
-        movies["release_date"] = pd.to_datetime(movies["release_date"], errors="coerce")
-    return movies.sort_values(
-        by=["popularity", "weightedVoteAverage", "release_date"], ascending=False
-    )
+def load_movies() -> Optional[pd.DataFrame]:
+    try:
+        movies = pd.read_pickle(_open_bytes(MOVIES_FILE, MOVIES_URL))
+        dtype_map = {
+            "movieId": "int32",
+            "popularity": "float32",
+            "runtime": "float32",
+            "weightedVoteAverage": "float32",
+        }
+        for col, dtype in dtype_map.items():
+            if col in movies:
+                movies[col] = pd.to_numeric(movies[col], errors="coerce").astype(dtype)
+        if "release_date" in movies:
+            movies["release_date"] = pd.to_datetime(movies["release_date"], errors="coerce")
+        return movies.sort_values(
+            by=["popularity", "weightedVoteAverage", "release_date"], ascending=False
+        )
+    except MemoryError:
+        st.error(
+            "Not enough memory to load movie metadata. Staying in light mode—try running locally with more RAM."
+        )
+        return None
 
 
 @st.cache_resource(show_spinner=False)
-def load_content_bundle() -> Tuple[pd.DataFrame, pd.DataFrame, object, object, object]:
-    movies = load_movies()
-    features = movies.drop(
-        [
-            "original_language",
-            "popularity",
-            "runtime",
-            "release_date",
-            "poster_path",
-            "weightedVoteAverage",
-            "title",
-            "movieId",
-            "genres",
-        ],
-        axis="columns",
-        errors="ignore",
-    )
-    knn_pl = joblib.load(_download_bytes(KNN_URL))
-    title_to_idx = pd.read_pickle(_download_bytes(TITLE_TO_IDX_URL))
-    idx_to_title = pd.read_pickle(_download_bytes(IDX_TO_TITLE_URL))
-    return movies, features, knn_pl, title_to_idx, idx_to_title
+def load_content_bundle() -> Optional[Tuple[pd.DataFrame, pd.DataFrame, object, object, object]]:
+    try:
+        movies = load_movies()
+        if movies is None:
+            return None
+        features = movies.drop(
+            [
+                "original_language",
+                "popularity",
+                "runtime",
+                "release_date",
+                "poster_path",
+                "weightedVoteAverage",
+                "title",
+                "movieId",
+                "genres",
+            ],
+            axis="columns",
+            errors="ignore",
+        )
+        knn_pl = joblib.load(_open_bytes(KNN_FILE, KNN_URL))
+        title_to_idx = pd.read_pickle(_open_bytes(TITLE_TO_IDX_FILE, TITLE_TO_IDX_URL))
+        idx_to_title = pd.read_pickle(_open_bytes(IDX_TO_TITLE_FILE, IDX_TO_TITLE_URL))
+        return movies, features, knn_pl, title_to_idx, idx_to_title
+    except MemoryError:
+        st.error(
+            "Not enough memory to load content-based models. Staying in light mode—try running locally with more RAM."
+        )
+        return None
 
 
 @st.cache_data(show_spinner=False)
 def load_ratings() -> Optional[pd.DataFrame]:
     try:
-        ratings = pd.read_pickle(_download_bytes(RATINGS_URL))
+        ratings = pd.read_pickle(_open_bytes(RATINGS_FILE, RATINGS_URL))
         dtype_map = {"userId": "int32", "movieId": "int32", "rating": "float32"}
         for col, dtype in dtype_map.items():
             if col in ratings:
@@ -123,8 +176,8 @@ def load_cf_bundle() -> Optional[Tuple[pd.DataFrame, object, object]]:
         ratings = load_ratings()
         if ratings is None:
             return None
-        algo = joblib.load(_download_bytes(SVD_URL))
-        weighted_algo = joblib.load(_download_bytes(WEIGHTED_SVD_URL))
+        algo = joblib.load(_open_bytes(SVD_FILE, SVD_URL))
+        weighted_algo = joblib.load(_open_bytes(WEIGHTED_SVD_FILE, WEIGHTED_SVD_URL))
         return ratings, algo, weighted_algo
     except MemoryError:
         st.error(

@@ -73,8 +73,17 @@ pip install streamlit pandas numpy scikit-learn scikit-surprise
   streamlit run stream_router.py
   ```
 - **Light mode (default):** to stay under Streamlit Community Cloud RAM limits, heavy assets (user-based SVD recommender + ratings analytics) stay off by default. Content-based recommendations and the overview still work.
-- **Enable full mode:** toggle the “Light mode (RAM saver)” switch inside the app (it will prompt for `heavy_mode_password` if defined in Streamlit secrets), or set `MOVIE_APP_LIGHT_MODE=0` / `light_mode = false` in `.streamlit/secrets.toml` when you have more memory. Full mode loads the ratings table and SVD models.
+- **Enable full mode:** toggle the “Light mode (RAM saver)” switch inside the app (it will prompt for `heavy_mode_password` if defined in Streamlit secrets or env `MOVIE_APP_HEAVY_PASSWORD`), or set `MOVIE_APP_LIGHT_MODE=0` / `light_mode = false` in `.streamlit/secrets.toml` when you have more memory. Full mode loads the ratings table and SVD models.
 - **Local heavy mode:** if cloud memory is tight, clone the GitHub repo and run the Streamlit app locally (commands above). With local RAM you can safely disable light mode and use the full recommender/analytics experience.
+- **Download weights/data for offline use:** download these files and place them in a local data folder (set `local_data_dir` in `streamlit-online/.streamlit/secrets.toml` or env `MOVIE_APP_LOCAL_DATA_DIR`):
+  - Movies metadata: https://drive.usercontent.google.com/u/0/uc?id=1-SJ8oASjn4Ubbm5VlLGJXju_HfYe_HJp&export=download → save as `movies.pkl`
+  - Ratings: https://drive.usercontent.google.com/download?id=1I5OyLwZs26RZtbG0QUpi9H0ntZv9Ov7C&export=download → save as `ratings.pkl`
+  - SVD model: https://drive.usercontent.google.com/download?id=1-EZ3pUuoKn_C8RXuM-n8W8coo-20q4nB&export=download → save as `svd.joblib`
+  - Weighted SVD model: https://drive.usercontent.google.com/download?id=1-9F142ZpJTyJCyP46NVwkButsVc7PfHC&export=download → save as `weighted_svd.joblib`
+  - KNN pipeline: https://drive.usercontent.google.com/u/0/uc?id=1-2j6yK1ajE37xifio-Eo1YLpbHsjLyLr&export=download → save as `knn.joblib`
+  - Title→index map: https://drive.usercontent.google.com/u/0/uc?id=1-AoCFwt2MZ2ExVR1wt-LiT8IDehnvjUP&export=download → save as `title_to_idx.pkl`
+  - Index→title map: https://drive.usercontent.google.com/u/0/uc?id=1-5kmSUkujuIKGAGHI76mRMZme6miXDCp&export=download → save as `idx_to_title.pkl`
+  - Folder placement: put all of the above files in a single directory (e.g. `/path/to/data`) and set `local_data_dir` in `streamlit-online/.streamlit/secrets.toml` or export `MOVIE_APP_LOCAL_DATA_DIR` to that same path so the app loads them locally without downloading.
 
 ## Usage
 1. Open the **Overview Page** to search for a movie.

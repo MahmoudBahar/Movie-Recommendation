@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 
 from data_loader import light_mode_enabled
@@ -5,9 +6,11 @@ from data_loader import light_mode_enabled
 
 def _get_password_secret() -> str:
     try:
-        return st.secrets.get("heavy_mode_password", None)
+        secret_val = st.secrets.get("heavy_mode_password", None)
     except Exception:
-        return None
+        secret_val = None
+    env_val = os.getenv("MOVIE_APP_HEAVY_PASSWORD")
+    return secret_val or env_val
 
 
 def resolve_light_mode(key_prefix: str = "") -> bool:

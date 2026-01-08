@@ -102,7 +102,17 @@ with tab1:
             "Switch off the toggle above and enter the heavy-mode password (if set) to load the ratings + SVD models."
         )
     else:
-        ratings, algo, weighted_algo = load_cf_bundle()
+        try:
+            ratings, algo, weighted_algo = load_cf_bundle()
+        except MemoryError:
+            # Avoid crashing the app on memory pressure: fall back to light mode.
+            st.session_state["model_heavy_mode_unlocked"] = False
+            st.session_state["model_light_mode_override"] = True
+            st.error(
+                "Not enough memory to load collaborative filtering models. "
+                "Staying in light mode—try running locally with more RAM."
+            )
+            st.stop()
         user_choices = list(ratings["userId"].unique().astype(str))
         user_id = st.selectbox("Select a User ID", options=user_choices)
         useWeightedRating = st.toggle("Use Weighted Ratings", False)

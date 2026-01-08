@@ -98,8 +98,8 @@ with tab1:
     st.subheader("👤 Recommendations for a User")
     if light_mode:
         st.info(
-            "User-based recommendations are disabled in light mode to keep memory low. "
-            "Set MOVIE_APP_LIGHT_MODE=0 (or light_mode=false in Streamlit secrets) to enable when you have more RAM."
+            "User-based recommendations are locked while light mode is on. "
+            "Switch off the toggle above and enter the heavy-mode password (if set) to load the ratings + SVD models."
         )
     else:
         ratings, algo, weighted_algo = load_cf_bundle()

@@ -40,8 +40,8 @@ st.pyplot(fig)
 if ratings is None:
     st.markdown("---")
     st.info(
-        "Ratings-heavy analytics are skipped in light mode to stay within the memory limits. "
-        "Set MOVIE_APP_LIGHT_MODE=0 (or light_mode=false in Streamlit secrets) to enable full analysis."
+        "Ratings-heavy analytics are locked while light mode is on. "
+        "Switch off the toggle above and enter the heavy-mode password (if set) to load ratings and full analysis."
     )
 else:
     # Section 3: Ratings Distribution

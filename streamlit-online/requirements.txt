@@ -1,5 +1,9 @@
 wordcloud
 surprise
+streamlit
+requests
+joblib
+pillow
 scikit-learn
 pandas
 numpy

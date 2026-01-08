@@ -65,6 +65,16 @@ pip install streamlit pandas numpy scikit-learn scikit-surprise
    streamlit run app.py
    ```
 
+## Deployment
+- The Streamlit UI lives in `streamlit-online/`. To run locally:
+  ```bash
+  cd streamlit-online
+  pip install -r requirements.txt
+  streamlit run stream_router.py
+  ```
+- **Light mode (default):** to stay under Streamlit Community Cloud RAM limits, heavy assets (user-based SVD recommender + ratings analytics) stay off by default. Content-based recommendations and the overview still work.
+- **Enable full mode:** set `MOVIE_APP_LIGHT_MODE=0` or add `light_mode = false` in `.streamlit/secrets.toml` when you have more memory. Full mode loads the ratings table and SVD models.
+
 ## Usage
 1. Open the **Overview Page** to search for a movie.
 2. Navigate to the **Recommendation Page** to get movie recommendations:
@@ -83,4 +93,3 @@ This project is licensed under the MIT License.
 For any queries or suggestions, feel free to reach out:
 - **Email**: mahmoudbahar585@outlook.com
 - **GitHub**: [MahmoudBahar](https://github.com/MahmoudBahar)
-

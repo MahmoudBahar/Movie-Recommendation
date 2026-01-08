@@ -4,6 +4,8 @@ import pandas as pd
 from PIL import Image
 import requests
 import io
+
+from data_loader import load_movies
 # Load banner image
 @st.cache_resource
 def load_image():
@@ -11,12 +13,8 @@ def load_image():
     image = image.crop((200, 600, 2120, 1200))
     return image
 
-@st.cache_resource
-def load_data():
-    return pd.read_pickle(io.BytesIO(requests.get('https://drive.usercontent.google.com/u/0/uc?id=1-SJ8oASjn4Ubbm5VlLGJXju_HfYe_HJp&export=download').content)).sort_values(by=['popularity', 'weightedVoteAverage', 'release_date'], ascending=False)
-
 if 'df' not in st.session_state:
-    st.session_state.df = load_data()
+    st.session_state.df = load_movies()
 
 if "banner_image" not in st.session_state:
     st.session_state.banner = load_image()

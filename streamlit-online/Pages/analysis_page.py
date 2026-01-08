@@ -3,17 +3,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 import seaborn as sns
-import io, requests
 
-# Load data (example paths, update as necessary)
-@st.cache_resource
-def load_data():
-    movies = pd.read_pickle(io.BytesIO(requests.get('https://drive.usercontent.google.com/u/0/uc?id=1-SJ8oASjn4Ubbm5VlLGJXju_HfYe_HJp&export=download').content))
-    ratings = pd.read_pickle(io.BytesIO(requests.get('https://drive.usercontent.google.com/download?id=1I5OyLwZs26RZtbG0QUpi9H0ntZv9Ov7C&export=download&authuser=0&confirm=t&uuid=9da5ac1b-c3c3-410f-8d00-2f001585b64d&at=APvzH3ootqPTp4kiQ44Ew8EDit-R%3A1735991866003').content))
-    return movies, ratings
+from data_loader import load_movies, load_ratings, light_mode_enabled
 
-if any([var not in st.session_state for var in ["dfMovies", "dfRatings"]]):
-    st.session_state.dfMovies, st.session_state.dfRatings = load_data()
+light_mode = light_mode_enabled()
+movies = load_movies()
+ratings = None if light_mode else load_ratings()
 
 # Page Title
 st.title("📊 Analysis of Movies and Ratings")
@@ -23,76 +18,69 @@ st.header("🔍 Quick Stats")
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.metric("Total Movies", len(st.session_state.dfMovies))
+    st.metric("Total Movies", len(movies))
 with col2:
-    st.metric("Total Ratings", len(st.session_state.dfRatings))
+    st.metric("Total Ratings", "light mode" if ratings is None else len(ratings))
 with col3:
-    st.metric("Unique Users", st.session_state.dfRatings['userId'].nunique())
+    st.metric("Unique Users", "light mode" if ratings is None else ratings["userId"].nunique())
 
 # Section 2: Top Genres Word Cloud
 st.markdown("---")
 st.header("🎭 Top Genres Word Cloud")
-@st.cache_resource
-def get_all_genres():
-    return st.session_state.dfMovies['genres'].str.split('|').explode()
-@st.cache_resource
-def workcloud_genres():
-    all_genres = get_all_genres()
-    return WordCloud(width=800, height=400, background_color='white').generate(' '.join(all_genres.dropna()))
-wordcloud = workcloud_genres()
+all_genres = movies["genres"].str.split("|").explode()
+wordcloud = WordCloud(width=800, height=400, background_color="white").generate(" ".join(all_genres.dropna()))
 
 fig, ax = plt.subplots(figsize=(10, 6))
-ax.imshow(wordcloud, interpolation='bilinear')
+ax.imshow(wordcloud, interpolation="bilinear")
 ax.axis("off")
 st.pyplot(fig)
 
-# Section 3: Ratings Distribution
-st.markdown("---")
-st.header("⭐ Ratings Distribution")
-@st.cache_resource
-def ratings_distribution():
+if ratings is None:
+    st.markdown("---")
+    st.info(
+        "Ratings-heavy analytics are skipped in light mode to stay within the memory limits. "
+        "Set MOVIE_APP_LIGHT_MODE=0 (or light_mode=false in Streamlit secrets) to enable full analysis."
+    )
+else:
+    # Section 3: Ratings Distribution
+    st.markdown("---")
+    st.header("⭐ Ratings Distribution")
     fig, ax = plt.subplots(figsize=(10, 6))
-    sns.histplot(st.session_state.dfRatings['rating'], bins=10, kde=True, ax=ax)
+    sns.histplot(ratings["rating"], bins=10, kde=True, ax=ax)
     ax.set_title("Distribution of Ratings")
     ax.set_xlabel("Rating")
     ax.set_ylabel("Frequency")
-    return fig
-st.pyplot(ratings_distribution())
+    st.pyplot(fig)
 
-# Section 4: Top 10 Most Rated Movies
-st.markdown("---")
-st.header("🏆 Top 10 Most Rated Movies")
-top_rated_movies = st.session_state.dfRatings.groupby('movieId').size().sort_values(ascending=False).head(10)
-top_rated_titles = st.session_state.dfMovies.set_index('movieId').loc[top_rated_movies.index, 'title']
-top_rated_mean = st.session_state.dfRatings.groupby('movieId')['rating'].mean().loc[top_rated_movies.index]
+    # Section 4: Top 10 Most Rated Movies
+    st.markdown("---")
+    st.header("🏆 Top 10 Most Rated Movies")
+    top_rated_movies = ratings.groupby("movieId").size().sort_values(ascending=False).head(10)
+    top_rated_titles = movies.set_index("movieId").loc[top_rated_movies.index, "title"]
+    top_rated_mean = ratings.groupby("movieId")["rating"].mean().loc[top_rated_movies.index]
 
-# Display in columns
-for idx, (title, count, avg) in enumerate(zip(top_rated_titles, top_rated_movies, top_rated_mean), 1):
-    st.write(f"**{idx}. {title}** - {count} ratings, With average Rating: {avg:.2f}")
+    for idx, (title, count, avg) in enumerate(zip(top_rated_titles, top_rated_movies, top_rated_mean), 1):
+        st.write(f"**{idx}. {title}** - {count} ratings, With average Rating: {avg:.2f}")
 
-# Section 5: Average Rating by Genre
-st.markdown("---")
-st.header("🎥 Average Rating by Genre")
-@st.cache_resource
-def avg_rating_by_genre():
-    ratings_with_genres = pd.merge(st.session_state.dfRatings, st.session_state.dfMovies[['movieId', 'genres']], on='movieId')
-    ratings_with_genres['genres'] = ratings_with_genres['genres'].str.split('|')
-    ratings_with_genres = ratings_with_genres.explode('genres')
-    ratings_with_genres = ratings_with_genres.groupby('genres')['rating'].mean().sort_values(ascending=False)
+    # Section 5: Average Rating by Genre
+    st.markdown("---")
+    st.header("🎥 Average Rating by Genre")
+    ratings_with_genres = pd.merge(ratings, movies[["movieId", "genres"]], on="movieId")
+    ratings_with_genres["genres"] = ratings_with_genres["genres"].str.split("|")
+    ratings_with_genres = ratings_with_genres.explode("genres")
+    ratings_with_genres = ratings_with_genres.groupby("genres")["rating"].mean().sort_values(ascending=False)
     fig, ax = plt.subplots(figsize=(10, 6))
     sns.barplot(x=ratings_with_genres.values, y=ratings_with_genres.index, ax=ax)
     ax.set_title("Average Rating by Genre")
     ax.set_xlabel("Average Rating")
     ax.set_ylabel("Genre")
-    return fig
-
-st.pyplot(avg_rating_by_genre())
+    st.pyplot(fig)
 
 # Section 6: Interactive Genre Filter
 st.markdown("---")
 st.header("🔎 Explore Movies by Genre")
-selected_genre = st.selectbox("Choose a Genre", get_all_genres().unique())
+selected_genre = st.selectbox("Choose a Genre", all_genres.unique())
 
-filtered_movies = st.session_state.dfMovies[st.session_state.dfMovies['genres'].str.contains(selected_genre, na=False)]
+filtered_movies = movies[movies["genres"].str.contains(selected_genre, na=False)]
 st.write(f"Movies in the genre **{selected_genre}**:")
-st.dataframe(filtered_movies[['title', 'genres']])
+st.dataframe(filtered_movies[["title", "genres"]])

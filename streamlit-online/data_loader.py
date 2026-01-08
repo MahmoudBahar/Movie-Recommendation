@@ -17,6 +17,7 @@ TITLE_TO_IDX_URL = "https://drive.usercontent.google.com/u/0/uc?id=1-AoCFwt2MZ2E
 IDX_TO_TITLE_URL = "https://drive.usercontent.google.com/u/0/uc?id=1-5kmSUkujuIKGAGHI76mRMZme6miXDCp&export=download"
 LOCAL_DATA_DIR_ENV = "MOVIE_APP_LOCAL_DATA_DIR"
 LOCAL_DATA_DIR_SECRET = "local_data_dir"
+SOURCE_SESSION_KEY = "data_source_info"
 
 MOVIES_FILE = "movies.pkl"
 RATINGS_FILE = "ratings.pkl"
@@ -86,10 +87,40 @@ def _maybe_local_bytes(filename: str) -> Optional[io.BytesIO]:
     return None
 
 
+def _record_source(filename: str, source: str) -> None:
+    try:
+        if SOURCE_SESSION_KEY not in st.session_state:
+            st.session_state[SOURCE_SESSION_KEY] = {}
+        st.session_state[SOURCE_SESSION_KEY][filename] = source
+    except Exception:
+        # If session_state not available (e.g., during CLI use), ignore.
+        pass
+
+
+def get_data_source_label() -> str:
+    """Return 'local', 'remote', 'mixed', or 'unknown' based on current session loads."""
+    try:
+        info = st.session_state.get(SOURCE_SESSION_KEY, {})
+    except Exception:
+        return "unknown"
+    if not info:
+        return "unknown"
+    sources = set(info.values())
+    if sources == {"local"}:
+        return "local"
+    if sources == {"remote"}:
+        return "remote"
+    if "local" in sources and "remote" in sources:
+        return "mixed"
+    return "unknown"
+
+
 def _open_bytes(filename: str, url: str) -> io.BytesIO:
     local = _maybe_local_bytes(filename)
     if local is not None:
+        _record_source(filename, "local")
         return local
+    _record_source(filename, "remote")
     return _download_bytes(url)
 
 

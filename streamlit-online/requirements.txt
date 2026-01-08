@@ -1,12 +1,13 @@
 wordcloud
-surprise
+scikit-surprise
+cython
 streamlit
 requests
 joblib
 pillow
 scikit-learn
 pandas
-numpy
+numpy==1.26.4
 matplotlib
 seaborn
 imblearn

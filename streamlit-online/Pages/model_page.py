@@ -1,8 +1,7 @@
 import streamlit as st
-import pandas as pd
 import numpy as np
 
-from data_loader import load_cf_bundle, load_content_bundle
+from data_loader import get_data_source_label, load_cf_bundle, load_content_bundle
 from mode_toggle import resolve_light_mode
 
 # Streamlit app
@@ -14,7 +13,13 @@ light_mode = resolve_light_mode(key_prefix="model_")
 # Tabs for different recommendation methods
 tab1, tab2, tab3 = st.tabs(["👤 User-Based", "✨ Custom Preferences", "🎬 Movie Similarity"])
 
-movies, features, knn_pl, title_to_idx, idx_to_title = load_content_bundle()
+content_bundle = load_content_bundle()
+if content_bundle is None:
+    st.session_state["model_heavy_mode_unlocked"] = False
+    st.session_state["model_light_mode_override"] = True
+    st.stop()
+movies, features, knn_pl, title_to_idx, idx_to_title = content_bundle
+st.caption(f"Data source: {get_data_source_label()}")
 
 
 def scrollableElement(output, header):

@@ -46,7 +46,7 @@ Ensure you have the following installed. If not, you can install them using:
 pip install streamlit pandas numpy scikit-learn scikit-surprise
 ```
 
-- Python 3.x
+- Python 3.12.x
 - Streamlit
 - Pandas, NumPy, Scikit-learn, scikit-surprise
 
@@ -74,7 +74,7 @@ pip install streamlit pandas numpy scikit-learn scikit-surprise
   ```
 - **Light mode (default):** to stay under Streamlit Community Cloud RAM limits, heavy assets (user-based SVD recommender + ratings analytics) stay off by default. Content-based recommendations and the overview still work.
 - **Enable full mode:** toggle the “Light mode (RAM saver)” switch inside the app (it will prompt for `heavy_mode_password` if defined in Streamlit secrets or env `MOVIE_APP_HEAVY_PASSWORD`), or set `MOVIE_APP_LIGHT_MODE=0` / `light_mode = false` in `.streamlit/secrets.toml` when you have more memory. Full mode loads the ratings table and SVD models.
-- **Local heavy mode:** if cloud memory is tight, clone the GitHub repo and run the Streamlit app locally (commands above). With local RAM you can safely disable light mode and use the full recommender/analytics experience.
+- **Local heavy mode:** if cloud memory is tight, clone the GitHub repo and run the Streamlit app locally (commands above). With local RAM you can safely disable light mode and use the full recommender/analytics experience (plan for ~8–10 GB RAM free to load ratings + SVD models comfortably; the artifact folder is ~4 GB on disk and expands in memory).
 - **Download weights/data for offline use:** grab everything from this folder and place the contents in a single directory (e.g. `/path/to/data`), then set `local_data_dir` in `streamlit-online/.streamlit/secrets.toml` or env `MOVIE_APP_LOCAL_DATA_DIR` to that path so the app loads locally without downloading:
   - Full folder (all artifacts together): https://drive.google.com/drive/folders/1--mTwk1UbQLmFpXwNWSA3JDXxpu2nBvB?usp=sharing
 

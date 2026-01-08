@@ -1,15 +1,18 @@
 import streamlit as st
-import pandas as pd
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 import seaborn as sns
 
-from data_loader import load_movies, load_ratings
+from data_loader import get_data_source_label, load_movies, load_ratings
 from mode_toggle import resolve_light_mode
 
 light_mode = resolve_light_mode(key_prefix="analysis_")
 
 movies = load_movies()
+if movies is None:
+    st.session_state["analysis_heavy_mode_unlocked"] = False
+    st.session_state["analysis_light_mode_override"] = True
+    st.stop()
 ratings = None
 if not light_mode:
     ratings = load_ratings()
@@ -20,6 +23,7 @@ if not light_mode:
 
 # Page Title
 st.title("📊 Analysis of Movies and Ratings")
+st.caption(f"Data source: {get_data_source_label()}")
 
 # Section 1: Quick Stats
 st.header("🔍 Quick Stats")

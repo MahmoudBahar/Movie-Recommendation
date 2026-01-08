@@ -18,3 +18,5 @@ Streamlit-offline/Models/SVD.joblib
 anaconda_projects/db/
 
 streamlit-online/.streamlit/
+
+streamlit-online/__pycache__/
